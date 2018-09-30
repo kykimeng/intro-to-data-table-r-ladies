@@ -1,0 +1,34 @@
+---
+title: "Introduction to `data.table`"
+author: "Haema Nilakanta & Kim Ky"
+date: "10/10/2018"
+output: html_document
+---
+
+___
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## What is `data.table`?
+
+*Describe the package here*
+
+## Why should you use `data.table`
+
+*List benefits of the package over base R here*
+
+## The Basics
+
+*Compare base R and data.table here*
+
+## The Advanced 
+
+*Compare base R and data.table here - more advanced operations*
+
+## References
+
+1. Matt Dowle and Arun Srinivasan (2018). `data.table`: Extension of `data.frame`. R
+  package version 1.11.4. https://CRAN.R-project.org/package=data.table
+2. https://github.com/Rdatatable/data.table/wiki
