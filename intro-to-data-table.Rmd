@@ -5,30 +5,82 @@ date: "10/10/2018"
 output: html_document
 ---
 
+<style type="text/css">
+
+body{ /* Normal  */
+      font-size: 14px;
+  }
+td {  /* Table  */
+  font-size: 10px;
+}
+h1 { /* Header 1 */
+  font-size: 26px;
+  color: DarkBlue;
+}
+h2 { /* Header 2 */
+    font-size: 22px;
+  color: DarkBlue;
+}
+h3 { /* Header 3 */
+  font-size: 18px;
+  color: DarkBlue;
+}
+code.r{ /* Code block */
+    font-size: 14px;
+}
+pre { /* Code block - determines code spacing between lines */
+    font-size: 14px;
+}
+</style>
+
 ___
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(data.table)
 ```
 
-## What is `data.table`?
+# Overview
 
-*Describe the package here*
+### What is `data.table`?
 
-## Why should you use `data.table`
+"`data.table` is an R package that provides an enhanced version of `data.frame`s." It provides a faster and more efficient way to do data manipulation. 
 
-*List benefits of the package over base R here*
+### Install and load
 
-## The Basics
+```{r,eval=F}
+# install 
+install.packages("data.table")
+# load 
+library(data.table)
+```
 
-*Compare base R and data.table here*
+# The Basics
 
-## The Advanced 
+
+
+# The Advanced 
 
 *Compare base R and data.table here - more advanced operations*
 
-## References
+# So, why should you use `data.table`?
+
+* concise and consistent syntax
+    + `DT[i, j, by]`
+* speed
+    + faster than base R and `dplyr`
+* efficient memory usage
+    + sub-assign by reference: `DT[x < 0, y := NA]`
+    + aggregate while joining: `DT1[DT2, list(z=sum(z)), by = .EACHI]` (equivalent to `DT1[, .(z=sum(z)), keyby=.(x,y)][DT2]`)
+* features
+    + `fread`, `fwrite`, automatic indexing, rolling joins, non-equivalent joins, etc.
+
+More detail, [here](https://stackoverflow.com/questions/21435339/data-table-vs-dplyr-can-one-do-something-well-the-other-cant-or-does-poorly).
+
+
+# References
 
 1. Matt Dowle and Arun Srinivasan (2018). `data.table`: Extension of `data.frame`. R
   package version 1.11.4. https://CRAN.R-project.org/package=data.table
 2. https://github.com/Rdatatable/data.table/wiki
+3. https://stackoverflow.com/questions/21435339/data-table-vs-dplyr-can-one-do-something-well-the-other-cant-or-does-poorly
