@@ -292,6 +292,16 @@ iris_dt[, `:=` (mean_petal_width = NULL, row_id = NULL)]
 head(iris_dt, 3)
 ```
 
+One great benefit of `data.table` is the ability to sub-assign by reference.
+
+```{r}
+# create a new variable setosa_dummy which equals 1 for setosa species, NA otherwise
+iris_dt[Species == "setosa", setosa_dummy := 1]
+# rename setosa to renamed_setosa
+iris_dt[Species == "setosa", Species := "renamed_setosa"]
+head(iris_dt, 3)
+```
+
 # More Advanced 
 
 ### Joins
