@@ -151,7 +151,7 @@ mean(iris$Sepal.Length)
 iris_dt[, mean(Sepal.Length)]
 ```
 
-One major advantage of `data.table`, is it can aggregate data with the table setting. For example, instead of using the `aggregate` function to compute the mean `Sepal.Length` by `Species`, we can do this directly in the `iris_dt`. This saves us a good chunk of time especially when we have a lot of rows to take a function over. 
+One major advantage of `data.table` is it can aggregate data with the table setting. For example, instead of using the `aggregate` function to compute the mean `Sepal.Length` by `Species`, we can do this directly in the `iris_dt`. This saves us a good chunk of time especially when we have a lot of rows to take a function over. 
 
 ```{r}
 # data.frame
@@ -221,6 +221,7 @@ Use `mpg` dataset from above
 
 a. Calulate minimum engine displacement (*displ*) and median highway miles per gallon (*hwy*) by manufacturer and class
 b. Repeat a. but for year 2008 only
+c. Calculate number of observations by `manufacturer`
 
 ### Keys
 
@@ -236,7 +237,7 @@ iris_dt[order(Species, Sepal.Length)] # does not store the ordering, unless assi
 setkey(iris_dt, Species, Sepal.Length) # keys are added; data.table is always sorted by its key columns
 ```
 
-Calculate mean `Sepal.Width` by `Species` and order the results by the calculated means:
+Calculate mean `Sepal.Width` by `Species` and order the results by `Species`:
 
 ```{r,eval=F}
 # data.frame
@@ -248,61 +249,11 @@ iris_dt[, .(mean_sepal_width = mean(Sepal.Width)), keyby = .(Species)]
 
 If it is not necessary to keep the original ordering of the variable(s) in `by` statement, using `keyby` can speed up even more. And the resulting `data.table` is sorted by the variable(s) in the `keyby` statement. 
 
-### Defining function `:=`
+### Exercise 3
 
-You can also define new variables in `data.table` without using unneccesary memory with the `:=` function. 
-
-```{r}
-# create a new variable called newIris
-iris_dt[, newIris := Petal.Width/Petal.Length]
-head(iris_dt, 3)
-
-# create a new variable mean_petal_width by species
-iris_dt[, mean_petal_width := mean(Petal.Width), .(Species)]
-head(iris_dt, 3)
-```
-
-Or, you can create multiple variables all in one go
-
-```{r,eval=F}
-iris_dt[, `:=` (newIris = Petal.Width/Petal.Length, 
-                row_id = .I)]
-# or
-iris_dt[, c("newIris", "row_id") := list(Petal.Width/Petal.Length, .I)]
-```
-
-We can also use `:=` to remove columns.
-
-```{r}
-# remove newIris column
-iris_dt[, newIris := NULL]
-```
-
-```{r,eval=F}
-# remove mean_petal_width and row_id 
-iris_dt[, c("mean_petal_width", "row_id") := NULL]
-# or
-cols <- c("mean_petal_width", "row_id")
-iris_dt[, (cols) := NULL]
-```
-
-```{r}
-# or 
-iris_dt[, `:=` (mean_petal_width = NULL, row_id = NULL)]
-head(iris_dt, 3)
-```
-
-One great benefit of `data.table` is the ability to sub-assign by reference.
-
-```{r}
-# create a new variable setosa_dummy which equals 1 for setosa species, NA otherwise
-iris_dt[Species == "setosa", setosa_dummy := 1]
-# rename setosa to renamed_setosa
-iris_dt[Species == "setosa", Species := "renamed_setosa"]
-head(iris_dt, 3)
-```
-
-# More Advanced 
+Use `mpg` dataset:
+a. Set `manufacturer`, `class`, and `model` as keys
+b. Calculate maximum engine displacement (*displ*) by class and model, using `keyby`
 
 ### Joins
 
@@ -334,6 +285,147 @@ Full joins:
 
 ```{r}
 merge(dt1, dt2, all = TRUE)
+```
+
+### Exercise 4
+
+a. Create `drv_description` data.table using this code: `drv_description <- data.table(drv = c("f", "r", "4"), drv_desc = c("front-wheel drive", "reer-wheel drive", "four-wheel drive"), key = "drv")`
+b. Join `mpg` and `drv_description` data.tables on `drv` variable using `DT1[DT2]` syntax
+c. Join `mpg` and `drv_description` data.tables on `drv` variable using `merge()` function
+
+### Defining function `:=`
+
+You can define new variables in `data.table` with the `:=` function. 
+
+```{r}
+# create a new variable called newIris
+iris_dt[, newIris := Petal.Width/Petal.Length]
+head(iris_dt, 3)
+
+# create a new variable mean_petal_width by species
+iris_dt[, mean_petal_width := mean(Petal.Width), .(Species)]
+head(iris_dt, 3)
+```
+
+Or, you can create multiple variables all in one go
+
+```{r,eval=F}
+iris_dt[, `:=` (newIris = Petal.Width/Petal.Length, 
+                row_id = .I)]
+# or
+iris_dt[, c("newIris", "row_id") := list(Petal.Width/Petal.Length, .I)]
+```
+
+One great benefit of `data.table` is the ability to sub-assign by reference.
+
+```{r}
+# create a new variable setosa_dummy which equals 1 for setosa species, NA otherwise
+iris_dt[Species == "setosa", setosa_dummy := 1]
+# rename setosa to renamed_setosa
+iris_dt[Species == "setosa", Species := "renamed_setosa"]
+head(iris_dt, 3)
+```
+
+You can also use `:=` to remove columns.
+
+```{r}
+# remove newIris column
+iris_dt[, newIris := NULL]
+```
+
+```{r,eval=F}
+# remove mean_petal_width and row_id 
+iris_dt[, c("mean_petal_width", "row_id", "setosa_dummy") := NULL]
+# or
+cols <- c("mean_petal_width", "row_id", "setosa_dummy")
+iris_dt[, (cols) := NULL]
+```
+
+```{r}
+# or 
+iris_dt[, `:=` (mean_petal_width = NULL, row_id = NULL, setosa_dummy = NULL)]
+head(iris_dt, 3)
+```
+
+### Exercise 5
+
+Use `mpg` dataset:
+a. Create a `manual_dummy`, an indicator whether the transmission is manual (*hint: `grepl("manual", trans)`*)
+b. Repeat a. but this time also create a `row_id` using `.I` all in one go.
+c. Let's assume that `displ` was entered incorrectly. Use sub-assign by reference to update `displ` with value of less than 2 to equal 2. 
+
+# More Advanced 
+
+### `.SD` and `.SDcols`
+
+You can access columns of a `data.table` using `.SD` and `.SDcols` syntax. 
+
+Select all columns in `iris_dt`:
+
+```{r}
+iris_dt[, .SD]
+```
+
+Select subset of columns by specifying columns in `.SDcols`:
+
+```{r}
+iris_dt[, .SD, .SDcols = c("Species", "Sepal.Width", "Sepal.Length")]
+# or 
+iris_dt[, .SD, .SDcols = c(5,1,2)]
+```
+
+Round up all numeric columns to integer:
+
+```{r}
+iris_dt[, lapply(.SD, round), .SDcols = 1:4]
+# assign them to the original columns
+cols <- 1:4 # or cols <- c("Sepal.Length", "Sepal.Width", "Petal.Length", "Petal.Width")
+iris_dt[, (cols) := lapply(.SD, round), .SDcols = cols]
+head(iris_dt, 3)
+```
+
+Calculate mean by Species:
+
+```{r}
+iris_dt <- as.data.table(iris)
+# mean of all columns by Species
+iris_dt[, lapply(.SD, mean), by = Species]
+# or if we only want to calculate mean of Sepal columns by Species
+iris_dt[, lapply(.SD, mean), by = Species, .SDcols = c("Sepal.Length", "Sepal.Width")]
+```
+
+Select first and last rows:
+
+```{r}
+iris_dt[, .SD[c(1, .N)]]
+# by Species
+iris_dt[, .SD[c(1, .N)], by = Species]
+```
+
+### Chaining
+
+Chaining in `data.table` refers to using multiple `[]` in one command.
+
+Calculate mean `Sepal.Length` by Species, order by the calculated mean, and only keep rows with mean less than 6:
+
+```{r}
+iris_dt[, .(mean_sepal_length = mean(Sepal.Length)), by = Species][order(mean_sepal_length)][mean_sepal_length < 6]
+```
+
+### Suppressing Intermediate Output with `{}`
+
+Create a new variable `sepal_length_diff` as the difference from mean value:
+
+```{r}
+iris_dt[, sepal_length_diff := {
+  mean_sepal_length = mean(Sepal.Length)
+  diff_from_avg = Sepal.Length - mean_sepal_length
+  round(diff_from_avg, 1)
+}]
+# equi: iris_dt[, sepal_length_diff := {mean_sepal_length = mean(Sepal.Length); diff_from_avg = Sepal.Length - mean_sepal_length; round(diff_from_avg, 1)}]
+head(iris_dt, 3)
+# sanity check
+round(iris_dt[1, Sepal.Length] - iris_dt[, mean(Sepal.Length)], 1) == iris_dt[1, sepal_length_diff]
 ```
 
 # So, why should you use `data.table`?
