@@ -171,6 +171,12 @@ aggregate(Sepal.Length ~ Species, iris[iris$Sepal.Width >= 3,], mean)
 iris_dt[Sepal.Width >= 3, .(mean_sepal_length = mean(Sepal.Length)), by = .(Species)]
 ```
 
+You can also use expressions within `by` statement. For example, calculate mean sepal length for `Sepal.Width > 3` and `Sepal.Width <= 3`:
+
+```{r}
+iris_dt[, mean(Sepal.Length), by = .(width_larger_than_3 = Sepal.Width > 3)]
+```
+
 Another powerful tool of this package is the `.N` command. This is a counting tool that holds the number of observations in the current group. For example, if we want to calculate the number of rows:
 
 ```{r}
@@ -213,6 +219,13 @@ iris_dt[, .I]
 # assign row numbers to variable row_id
 iris_dt[, row_id := .I]
 head(iris_dt, 3)
+```
+
+`.GRP` command allows you to add unique id to groups as identified by `by` statement. 
+
+```{r}
+iris_dt[, .GRP]
+iris_dt[, .GRP, by = .(Species, sepal_width_larger_than_3 = Sepal.Width > 3)]
 ```
 
 ### Exercise 2
@@ -448,7 +461,8 @@ More detail, [here](https://stackoverflow.com/questions/21435339/data-table-vs-d
 1. Matt Dowle and Arun Srinivasan (2018). `data.table`: Extension of `data.frame`. R
   package version 1.11.4. https://CRAN.R-project.org/package=data.table
 2. https://github.com/Rdatatable/data.table/wiki
-3. https://stackoverflow.com/questions/21435339/data-table-vs-dplyr-can-one-do-something-well-the-other-cant-or-does-poorly
-4. http://brooksandrew.github.io/simpleblog/articles/advanced-data-table/
-5. https://s3.amazonaws.com/assets.datacamp.com/img/blog/data+table+cheat+sheet.pdf
-6. https://stackoverflow.com/questions/20039335/what-is-the-purpose-of-setting-a-key-in-data-table
+3. `data.table` vs. `dplyr`. https://stackoverflow.com/questions/21435339/data-table-vs-dplyr-can-one-do-something-well-the-other-cant-or-does-poorly
+4. Advaned tips and tricks with `data.table`. http://brooksandrew.github.io/simpleblog/articles/advanced-data-table/
+5. `data.table` cheat sheet. https://s3.amazonaws.com/assets.datacamp.com/img/blog/data+table+cheat+sheet.pdf
+6. Purpose of setting a key in `data.table`. https://stackoverflow.com/questions/20039335/what-is-the-purpose-of-setting-a-key-in-data-table
+7. `.EACHI` in `data.table`. https://stackoverflow.com/questions/27004002/eachi-in-data-table/27004566#27004566
