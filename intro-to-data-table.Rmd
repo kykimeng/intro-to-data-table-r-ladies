@@ -441,6 +441,66 @@ head(iris_dt, 3)
 round(iris_dt[1, Sepal.Length] - iris_dt[, mean(Sepal.Length)], 1) == iris_dt[1, sepal_length_diff]
 ```
 
+### Rolling Joins
+
+Let's **roll forward**:
+
+```{r}
+dt1 <- data.table(x = c("a", "b", "c", "d"), dt1_y = c(11.9, 21.4, 5.7, 18))
+dt2 <- data.table(dt2_y = c(10, 15, 20), z = c("one", "two", "three"))
+# add row ids and duplicate y  
+dt1[, `:=` (dt1_row_id = .I, joint_y = dt1_y)]
+dt2[, `:=` (dt2_row_id = .I, joint_y = dt2_y)]
+
+dt1
+dt2
+dt2[dt1, on = .(joint_y), roll = T] # equi: dt2[dt1, on = .(joint_y), roll = Inf]
+```
+
+This means that for each `dt1_y`, find `dt2_y` that is closest to `dt1_y` with the condition `dt1_y >= dt2_y`. This condition is the forward part of the rolling join. 
+
+Now, let's **roll backward**:
+
+```{r}
+dt2[dt1, on = .(joint_y), roll = -Inf]
+```
+
+Now the condition is reverse, i.e. `dt1_y <= dt2_y`. Pay attention to the minus sign in the `-Inf`; it is how you tell `data.table` to roll backward instead of forward. 
+
+Next, let's give them a window to roll on:
+
+```{r}
+dt2[dt1, on = .(joint_y), roll = -2]
+```
+
+Now the condition is restricted to only match if `dt1_y <= dt2_y - 2`. 
+
+```{r}
+dt2[dt1, on = .(joint_y), roll = 2]
+```
+
+The condition here is `dt1_y <= dt2_y + 2`.
+
+Another cool feature in `data.table` is the `foverlaps()` function which allows you to join tables based on range of values. Let's look at a couple examples. 
+
+```{r}
+# each window does not have to be equal
+dt3 <- data.table(min_y = c(0, 10, 15, 20), max_y = c(10, 15, 20, 30))
+setkey(dt3, min_y, max_y)
+# add a new column to dt1 and drop joint_y and dt1_row_id
+dt1[, `:=` (dt1_y_end = c(13, 25, 10, 22), joint_y = NULL, dt1_row_id = NULL)]
+setkey(dt1, dt1_y, dt1_y_end)
+foverlaps(dt1, dt3, type = "any")
+```
+
+When specifying `type = "any"`, as long as `[dt1_y, dt1_y_end]` and `[min_y, max_y]` ranges overlap it will give a match. 
+
+```{r}
+foverlaps(dt1, dt3, type = "within")
+```
+
+When specifying `type = "within"`, the only matches returned are those where `[dt1_y, dt1_y_end]` range is **within** `[min_y, max_y]`.
+
 # So, why should you use `data.table`?
 
 * concise and consistent syntax
@@ -451,7 +511,7 @@ round(iris_dt[1, Sepal.Length] - iris_dt[, mean(Sepal.Length)], 1) == iris_dt[1,
     + sub-assign by reference: `DT[x < 0, y := NA]`
     + aggregate while joining: `DT1[DT2, list(z=sum(z)), by = .EACHI]` (equivalent to `DT1[, .(z=sum(z)), keyby=.(x,y)][DT2]`)
 * features
-    + `fread`, `fwrite`, automatic indexing, rolling joins, non-equivalent joins, etc.
+    + `fread`, `fwrite`, automatic indexing, rolling joins, `foverlaps`, etc.
 
 More detail, [here](https://stackoverflow.com/questions/21435339/data-table-vs-dplyr-can-one-do-something-well-the-other-cant-or-does-poorly).
 
@@ -466,3 +526,4 @@ More detail, [here](https://stackoverflow.com/questions/21435339/data-table-vs-d
 5. `data.table` cheat sheet. https://s3.amazonaws.com/assets.datacamp.com/img/blog/data+table+cheat+sheet.pdf
 6. Purpose of setting a key in `data.table`. https://stackoverflow.com/questions/20039335/what-is-the-purpose-of-setting-a-key-in-data-table
 7. `.EACHI` in `data.table`. https://stackoverflow.com/questions/27004002/eachi-in-data-table/27004566#27004566
+8. Understand `data.table` rolling joins. https://www.r-bloggers.com/understanding-data-table-rolling-joins/
