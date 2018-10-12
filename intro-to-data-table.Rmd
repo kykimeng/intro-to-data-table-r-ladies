@@ -132,7 +132,7 @@ Notice with the usual `data.frame`, you end up calling the dataset multiple time
 
 ### Exercise 1
 
-a. Import `mpg` dataset: `data("mpg")`
+a. Import `mpg` dataset. To do this you need to load `ggplot2` library: `library(ggplot2)`. If you don't have this library installed, you can do so by executing `install.packages("ggplot2")`. Once `ggplot2` is loaded, import the data: `data("mpg")`. 
 b. Convert `mpg` to a `data.table` object
 c. Find rows where *manufacturer* is *audi*, *year* is *2008*, and *class* is *compact*
 
@@ -448,7 +448,7 @@ round(iris_dt[1, Sepal.Length] - iris_dt[, mean(Sepal.Length)], 1) == iris_dt[1,
 
 ### Rolling Joins
 
-Let's **roll forward**:
+Let's **roll forward** (last observation carried forward):
 
 ```{r}
 dt1 <- data.table(x = c("a", "b", "c", "d"), dt1_y = c(11.9, 21.4, 5.7, 18))
@@ -464,7 +464,7 @@ dt2[dt1, on = .(joint_y), roll = T] # equi: dt2[dt1, on = .(joint_y), roll = Inf
 
 This means that for each `dt1_y`, find `dt2_y` that is closest to `dt1_y` with the condition `dt1_y >= dt2_y`. This condition is the forward part of the rolling join. 
 
-Now, let's **roll backward**:
+Now, let's **roll backward** (next observation carried backward):
 
 ```{r}
 dt2[dt1, on = .(joint_y), roll = -Inf]
@@ -485,6 +485,12 @@ dt2[dt1, on = .(joint_y), roll = 2]
 ```
 
 The condition here is `dt1_y <= dt2_y + 2`.
+
+If you would like to roll both way to the nearest value instead, you can use `roll = "nearest"`. 
+
+```{r}
+dt2[dt1, on = .(joint_y), roll = "nearest"]
+```
 
 Another cool feature in `data.table` is the `foverlaps()` function which allows you to join tables based on range of values. Let's look at a couple examples. 
 
